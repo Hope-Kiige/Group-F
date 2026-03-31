@@ -1,0 +1,533 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Projects{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-building text-success me-2"></i>
+        Construction Projects
+    </h2>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProjectModal">
+        <i class="fas fa-plus me-2"></i>
+        New Project
+    </button>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="input-group">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search projects...">
+            <button class="btn btn-outline-success" onclick="searchProjects()">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="statusFilter" onchange="filterByStatus()">
+            <option value="all">All Status</option>
+            <option value="estimated">Estimated</option>
+            <option value="scheduled">Scheduled</option>
+            <option value="in_progress">In Progress</option>
+            <option value="completed">Completed</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="greenFilter" onchange="filterByGreen()">
+            <option value="all">All Projects</option>
+            <option value="green">Green Technology Projects</option>
+            <option value="non-green">Non-Green Projects</option>
+        </select>
+    </div>
+</div>
+
+<!-- Projects Cards Grid -->
+<div class="row" id="projectsGrid">
+    <!-- Projects will be loaded here -->
+</div>
+
+<!-- Add Project Modal -->
+<div class="modal fade" id="addProjectModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    New Construction Project
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addProjectForm">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Project Title *</label>
+                            <input type="text" class="form-control" id="projectTitle" required>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Customer *</label>
+                            <select class="form-select" id="projectCustomer" required>
+                                <option value="">Select Customer</option>
+                                <option value="1">John Mwangi</option>
+                                <option value="2">Mary Wanjiku</option>
+                                <option value="3">Peter Omondi</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="projectDescription" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Estimated Cost (KES)</label>
+                            <input type="number" class="form-control" id="estimatedCost" placeholder="0.00">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Start Date</label>
+                            <input type="date" class="form-control" id="startDate">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="projectStatus">
+                                <option value="estimated">Estimate Pending</option>
+                                <option value="scheduled">Scheduled</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-leaf text-success me-1"></i>
+                            Green Technology Used
+                        </label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="solar" id="greenSolar">
+                                    <label class="form-check-label" for="greenSolar">
+                                        Solar Panels
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="rainwater" id="greenRainwater">
+                                    <label class="form-check-label" for="greenRainwater">
+                                        Rainwater Harvesting
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="led" id="greenLED">
+                                    <label class="form-check-label" for="greenLED">
+                                        LED Lighting
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="energy" id="greenEnergy">
+                                    <label class="form-check-label" for="greenEnergy">
+                                        Energy Efficient Appliances
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="recycled" id="greenRecycled">
+                                    <label class="form-check-label" for="greenRecycled">
+                                        Recycled Materials
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="insulation" id="greenInsulation">
+                                    <label class="form-check-label" for="greenInsulation">
+                                        Eco-friendly Insulation
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="saveProject()">
+                    <i class="fas fa-save me-2"></i>
+                    Create Project
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Project Modal -->
+<div class="modal fade" id="viewProjectModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    Project Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="projectDetails">
+                <!-- Project details will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sample projects data
+    let projects = [
+        {
+            id: 1,
+            title: "Solar Panel Installation",
+            customer: "John Mwangi",
+            description: "Install 5kW solar system with battery backup",
+            estimated_cost: 500000,
+            start_date: "2026-04-15",
+            status: "scheduled",
+            green_tech: ["solar", "led"],
+            progress: 0
+        },
+        {
+            id: 2,
+            title: "Eco-friendly Home Renovation",
+            customer: "Mary Wanjiku",
+            description: "Complete home renovation with green materials",
+            estimated_cost: 1200000,
+            start_date: "2026-03-20",
+            status: "in_progress",
+            green_tech: ["rainwater", "led", "insulation"],
+            progress: 45
+        },
+        {
+            id: 3,
+            title: "Rainwater Harvesting System",
+            customer: "Peter Omondi",
+            description: "Install rainwater collection and filtration system",
+            estimated_cost: 250000,
+            start_date: null,
+            status: "estimated",
+            green_tech: ["rainwater"],
+            progress: 0
+        },
+        {
+            id: 4,
+            title: "Commercial Building LED Retrofit",
+            customer: "John Mwangi",
+            description: "Replace all lighting with energy-efficient LEDs",
+            estimated_cost: 180000,
+            start_date: "2026-02-01",
+            end_date: "2026-02-28",
+            status: "completed",
+            green_tech: ["led", "energy"],
+            progress: 100
+        }
+    ];
+    
+    // Status badge colors
+    const statusColors = {
+        'estimated': 'warning',
+        'scheduled': 'info',
+        'in_progress': 'primary',
+        'completed': 'success'
+    };
+    
+    const statusLabels = {
+        'estimated': 'Estimate Pending',
+        'scheduled': 'Scheduled',
+        'in_progress': 'In Progress',
+        'completed': 'Completed'
+    };
+    
+    // Load projects on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadProjects();
+    });
+    
+    function loadProjects() {
+        const grid = document.getElementById('projectsGrid');
+        
+        if (projects.length === 0) {
+            grid.innerHTML = `
+                <div class="col-12">
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No projects found. Click "New Project" to get started!
+                    </div>
+                </div>
+            `;
+            return;
+        }
+        
+        grid.innerHTML = projects.map(project => `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">${project.title}</h6>
+                            <span class="badge bg-${statusColors[project.status]}">${statusLabels[project.status]}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-user me-1"></i> ${project.customer}
+                        </p>
+                        <p class="small text-muted">${project.description.substring(0, 80)}${project.description.length > 80 ? '...' : ''}</p>
+                        
+                        <div class="mb-2">
+                            <strong>Estimated Cost:</strong><br>
+                            <span class="text-success">KES ${project.estimated_cost.toLocaleString()}</span>
+                        </div>
+                        
+                        ${project.start_date ? `
+                        <div class="mb-2">
+                            <strong>Start Date:</strong><br>
+                            ${project.start_date}
+                        </div>
+                        ` : ''}
+                        
+                        ${project.green_tech && project.green_tech.length > 0 ? `
+                        <div class="mb-2">
+                            <strong><i class="fas fa-leaf text-success"></i> Green Tech:</strong><br>
+                            ${project.green_tech.map(tech => {
+                                const techNames = {
+                                    'solar': '☀️ Solar',
+                                    'rainwater': '💧 Rainwater',
+                                    'led': '💡 LED',
+                                    'energy': '⚡ Energy Efficient',
+                                    'recycled': '♻️ Recycled',
+                                    'insulation': '🏠 Insulation'
+                                };
+                                return `<span class="badge bg-light text-dark me-1">${techNames[tech] || tech}</span>`;
+                            }).join('')}
+                        </div>
+                        ` : ''}
+                        
+                        ${project.status === 'in_progress' ? `
+                        <div class="mt-2">
+                            <small>Progress</small>
+                            <div class="progress" style="height: 8px;">
+                                <div class="progress-bar bg-success" style="width: ${project.progress}%"></div>
+                            </div>
+                            <small class="text-muted">${project.progress}% Complete</small>
+                        </div>
+                        ` : ''}
+                    </div>
+                    <div class="card-footer bg-white">
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="viewProject(${project.id})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="btn btn-sm btn-outline-warning me-1" onclick="editProject(${project.id})">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        ${project.status === 'in_progress' ? `
+                        <button class="btn btn-sm btn-outline-success" onclick="updateProgress(${project.id})">
+                            <i class="fas fa-chart-line"></i> Update
+                        </button>
+                        ` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function searchProjects() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = projects.filter(p => 
+            p.title.toLowerCase().includes(searchTerm) ||
+            p.customer.toLowerCase().includes(searchTerm) ||
+            p.description.toLowerCase().includes(searchTerm)
+        );
+        
+        const grid = document.getElementById('projectsGrid');
+        
+        if (filtered.length === 0) {
+            grid.innerHTML = '<div class="col-12"><div class="alert alert-info text-center">No projects found</div></div>';
+            return;
+        }
+        
+        grid.innerHTML = filtered.map(project => `
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0">${project.title}</h6>
+                            <span class="badge bg-${statusColors[project.status]}">${statusLabels[project.status]}</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p class="text-muted mb-2"><i class="fas fa-user me-1"></i> ${project.customer}</p>
+                        <p class="small text-muted">${project.description.substring(0, 80)}</p>
+                        <div><strong>Cost:</strong> KES ${project.estimated_cost.toLocaleString()}</div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <button class="btn btn-sm btn-outline-info" onclick="viewProject(${project.id})">View</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function filterByStatus() {
+        const status = document.getElementById('statusFilter').value;
+        if (status === 'all') {
+            loadProjects();
+        } else {
+            const filtered = projects.filter(p => p.status === status);
+            const grid = document.getElementById('projectsGrid');
+            grid.innerHTML = filtered.map(project => `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0">${project.title}</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Customer:</strong> ${project.customer}</p>
+                            <p><strong>Cost:</strong> KES ${project.estimated_cost.toLocaleString()}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    function filterByGreen() {
+        const filter = document.getElementById('greenFilter').value;
+        if (filter === 'all') {
+            loadProjects();
+        } else if (filter === 'green') {
+            const filtered = projects.filter(p => p.green_tech && p.green_tech.length > 0);
+            const grid = document.getElementById('projectsGrid');
+            grid.innerHTML = filtered.map(project => `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card h-100 shadow-sm border-success">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0"><i class="fas fa-leaf me-1"></i> ${project.title}</h6>
+                        </div>
+                        <div class="card-body">
+                            <p><strong>Customer:</strong> ${project.customer}</p>
+                            <p><strong>Green Tech:</strong> ${project.green_tech.length} technologies used</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+    }
+    
+    function saveProject() {
+        const greenTech = [];
+        if (document.getElementById('greenSolar').checked) greenTech.push('solar');
+        if (document.getElementById('greenRainwater').checked) greenTech.push('rainwater');
+        if (document.getElementById('greenLED').checked) greenTech.push('led');
+        if (document.getElementById('greenEnergy').checked) greenTech.push('energy');
+        if (document.getElementById('greenRecycled').checked) greenTech.push('recycled');
+        if (document.getElementById('greenInsulation').checked) greenTech.push('insulation');
+        
+        const newProject = {
+            id: projects.length + 1,
+            title: document.getElementById('projectTitle').value,
+            customer: document.getElementById('projectCustomer').options[document.getElementById('projectCustomer').selectedIndex].text,
+            description: document.getElementById('projectDescription').value,
+            estimated_cost: parseFloat(document.getElementById('estimatedCost').value) || 0,
+            start_date: document.getElementById('startDate').value || null,
+            status: document.getElementById('projectStatus').value,
+            green_tech: greenTech,
+            progress: 0
+        };
+        
+        if (!newProject.title) {
+            alert('Please enter a project title');
+            return;
+        }
+        
+        projects.push(newProject);
+        
+        // Close modal and reset form
+        bootstrap.Modal.getInstance(document.getElementById('addProjectModal')).hide();
+        document.getElementById('addProjectForm').reset();
+        
+        // Refresh projects grid
+        loadProjects();
+        
+        alert('Project created successfully!');
+    }
+    
+    function viewProject(id) {
+        const project = projects.find(p => p.id === id);
+        const modal = document.getElementById('projectDetails');
+        
+        modal.innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <strong>Project Title:</strong>
+                    <p>${project.title}</p>
+                    
+                    <strong>Customer:</strong>
+                    <p>${project.customer}</p>
+                    
+                    <strong>Status:</strong>
+                    <p><span class="badge bg-${statusColors[project.status]}">${statusLabels[project.status]}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <strong>Estimated Cost:</strong>
+                    <p class="text-success fw-bold">KES ${project.estimated_cost.toLocaleString()}</p>
+                    
+                    <strong>Start Date:</strong>
+                    <p>${project.start_date || 'Not scheduled'}</p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-12">
+                    <strong>Description:</strong>
+                    <p>${project.description || 'No description provided'}</p>
+                </div>
+            </div>
+            ${project.green_tech && project.green_tech.length > 0 ? `
+            <div class="row">
+                <div class="col-12">
+                    <strong><i class="fas fa-leaf text-success"></i> Green Technologies:</strong>
+                    <div class="mt-2">
+                        ${project.green_tech.map(tech => {
+                            const techNames = {
+                                'solar': '☀️ Solar Panels',
+                                'rainwater': '💧 Rainwater Harvesting',
+                                'led': '💡 LED Lighting',
+                                'energy': '⚡ Energy Efficient Appliances',
+                                'recycled': '♻️ Recycled Materials',
+                                'insulation': '🏠 Eco-friendly Insulation'
+                            };
+                            return `<span class="badge bg-success me-1 p-2">${techNames[tech] || tech}</span>`;
+                        }).join('')}
+                    </div>
+                </div>
+            </div>
+            ` : ''}
+        `;
+        
+        new bootstrap.Modal(document.getElementById('viewProjectModal')).show();
+    }
+    
+    function editProject(id) {
+        alert('Edit feature coming soon!');
+    }
+    
+    function updateProgress(id) {
+        const newProgress = prompt('Enter progress percentage (0-100):');
+        if (newProgress !== null && !isNaN(newProgress) && newProgress >= 0 && newProgress <= 100) {
+            const project = projects.find(p => p.id === id);
+            project.progress = parseInt(newProgress);
+            if (project.progress === 100) {
+                project.status = 'completed';
+            }
+            loadProjects();
+            alert('Progress updated successfully!');
+        }
+    }
+</script>
+{% endblock %}

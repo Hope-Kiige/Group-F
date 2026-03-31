@@ -1,0 +1,467 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Job Schedule{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-calendar-alt text-success me-2"></i>
+        Job Schedule
+    </h2>
+    <div>
+        <button class="btn btn-outline-success me-2" onclick="changeWeek(-1)">
+            <i class="fas fa-chevron-left"></i> Previous Week
+        </button>
+        <button class="btn btn-success" onclick="goToCurrentWeek()">
+            <i class="fas fa-calendar-week me-1"></i> Current Week
+        </button>
+        <button class="btn btn-outline-success" onclick="changeWeek(1)">
+            Next Week <i class="fas fa-chevron-right"></i>
+        </button>
+    </div>
+</div>
+
+<!-- Week Display -->
+<div class="alert alert-success text-center mb-4">
+    <h4 class="mb-0" id="weekRange">Week of March 30 - April 5, 2026</h4>
+</div>
+
+<!-- Calendar View -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered mb-0" style="min-width: 800px;">
+                <thead class="table-success">
+                    <tr class="text-center">
+                        <th style="width: 100px;">Time</th>
+                        <th id="monHeader">Monday</th>
+                        <th id="tueHeader">Tuesday</th>
+                        <th id="wedHeader">Wednesday</th>
+                        <th id="thuHeader">Thursday</th>
+                        <th id="friHeader">Friday</th>
+                        <th id="satHeader">Saturday</th>
+                        <th id="sunHeader">Sunday</th>
+                    </tr>
+                </thead>
+                <tbody id="calendarBody">
+                    <!-- Calendar rows will be populated here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Jobs Summary -->
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock text-success me-2"></i>
+                    Upcoming Jobs (Next 7 Days)
+                </h5>
+            </div>
+            <div class="card-body" id="upcomingJobs">
+                <!-- Upcoming jobs list -->
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar text-success me-2"></i>
+                    Weekly Schedule Summary
+                </h5>
+            </div>
+            <div class="card-body" id="weeklySummary">
+                <!-- Summary stats -->
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Job Modal -->
+<div class="modal fade" id="scheduleJobModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle me-2"></i>
+                    Schedule New Job
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleJobForm">
+                    <div class="mb-3">
+                        <label class="form-label">Project *</label>
+                        <select class="form-select" id="scheduleProject" required>
+                            <option value="">Select Project</option>
+                            <option value="1">Solar Panel Installation - John Mwangi</option>
+                            <option value="2">Eco-friendly Home Renovation - Mary Wanjiku</option>
+                            <option value="3">Rainwater Harvesting System - Peter Omondi</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Start Date *</label>
+                        <input type="date" class="form-control" id="scheduleStartDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">End Date *</label>
+                        <input type="date" class="form-control" id="scheduleEndDate" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Time Slot</label>
+                        <select class="form-select" id="scheduleTimeSlot">
+                            <option value="8:00 AM - 12:00 PM">Morning (8:00 AM - 12:00 PM)</option>
+                            <option value="1:00 PM - 5:00 PM">Afternoon (1:00 PM - 5:00 PM)</option>
+                            <option value="8:00 AM - 5:00 PM">Full Day (8:00 AM - 5:00 PM)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Workers Assigned</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="bricklayer" id="workerBricklayer">
+                            <label class="form-check-label" for="workerBricklayer">
+                                Bricklayer (2)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="carpenter" id="workerCarpenter">
+                            <label class="form-check-label" for="workerCarpenter">
+                                Carpenter (2)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="plumber" id="workerPlumber">
+                            <label class="form-check-label" for="workerPlumber">
+                                Plumber (1)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Job will be confirmed with customer 3 days before start date.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="scheduleJob()">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Schedule Job
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sample scheduled jobs data
+    let scheduledJobs = [
+        {
+            id: 1,
+            project_id: 1,
+            project_title: "Solar Panel Installation",
+            customer: "John Mwangi",
+            start_date: "2026-04-01",
+            end_date: "2026-04-03",
+            time_slot: "8:00 AM - 5:00 PM",
+            workers: ["bricklayer", "carpenter"],
+            status: "confirmed",
+            green_tech: ["solar", "led"]
+        },
+        {
+            id: 2,
+            project_id: 2,
+            project_title: "Eco-friendly Home Renovation",
+            customer: "Mary Wanjiku",
+            start_date: "2026-03-20",
+            end_date: "2026-04-05",
+            time_slot: "8:00 AM - 5:00 PM",
+            workers: ["carpenter", "plumber"],
+            status: "in_progress",
+            green_tech: ["rainwater", "led", "insulation"]
+        },
+        {
+            id: 3,
+            project_id: 3,
+            project_title: "Rainwater Harvesting System",
+            customer: "Peter Omondi",
+            start_date: "2026-04-08",
+            end_date: "2026-04-10",
+            time_slot: "8:00 AM - 12:00 PM",
+            workers: ["plumber"],
+            status: "scheduled",
+            green_tech: ["rainwater"]
+        }
+    ];
+    
+    let currentDate = new Date();
+    let currentWeekStart = getStartOfWeek(currentDate);
+    
+    function getStartOfWeek(date) {
+        const d = new Date(date);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        return new Date(d.setDate(diff));
+    }
+    
+    function formatDate(date) {
+        return date.toISOString().split('T')[0];
+    }
+    
+    function formatDisplayDate(date) {
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+    
+    function getWeekDates(start) {
+        const week = [];
+        for (let i = 0; i < 7; i++) {
+            const date = new Date(start);
+            date.setDate(start.getDate() + i);
+            week.push(date);
+        }
+        return week;
+    }
+    
+    function updateWeekDisplay() {
+        const weekEnd = new Date(currentWeekStart);
+        weekEnd.setDate(weekEnd.getDate() + 6);
+        
+        const startStr = currentWeekStart.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const endStr = weekEnd.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        
+        document.getElementById('weekRange').innerHTML = `Week of ${startStr} - ${endStr}`;
+        
+        // Update day headers
+        const weekDates = getWeekDates(currentWeekStart);
+        const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+        weekDates.forEach((date, index) => {
+            const headerId = ['monHeader', 'tueHeader', 'wedHeader', 'thuHeader', 'friHeader', 'satHeader', 'sunHeader'][index];
+            document.getElementById(headerId).innerHTML = `<strong>${days[index]}</strong><br><small class="text-muted">${formatDisplayDate(date)}</small>`;
+        });
+        
+        renderCalendar();
+        updateUpcomingJobs();
+        updateWeeklySummary();
+    }
+    
+    function renderCalendar() {
+        const weekDates = getWeekDates(currentWeekStart);
+        const timeSlots = ['8:00 AM', '10:00 AM', '12:00 PM', '2:00 PM', '4:00 PM'];
+        
+        let html = '';
+        
+        timeSlots.forEach(time => {
+            html += '<tr>';
+            html += `<td class="bg-light fw-bold text-center">${time}</td>`;
+            
+            weekDates.forEach(date => {
+                const dateStr = formatDate(date);
+                const jobsAtTime = scheduledJobs.filter(job => {
+                    const jobStart = new Date(job.start_date);
+                    const jobEnd = new Date(job.end_date);
+                    const currentDate = new Date(dateStr);
+                    return currentDate >= jobStart && currentDate <= jobEnd;
+                });
+                
+                if (jobsAtTime.length > 0) {
+                    html += `<td class="align-top" style="background-color: #e8f5e9;">
+                        <div class="p-1">`;
+                    jobsAtTime.forEach(job => {
+                        html += `
+                            <div class="small border-bottom pb-1 mb-1">
+                                <div class="fw-bold text-success">${job.project_title}</div>
+                                <div class="text-muted">${job.customer}</div>
+                                <div class="text-muted small">${job.time_slot}</div>
+                                ${job.green_tech ? '<span class="badge bg-success">🌱 Green</span>' : ''}
+                                <button class="btn btn-sm btn-link p-0" onclick="viewJobDetails(${job.id})">Details</button>
+                            </div>
+                        `;
+                    });
+                    html += `</div></td>`;
+                } else {
+                    html += `<td class="align-top" style="height: 80px;">
+                        <div class="p-1 text-muted small">No jobs scheduled</div>
+                        <button class="btn btn-sm btn-outline-success mt-1" onclick="openScheduleModal('${dateStr}')">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </td>`;
+                }
+            });
+            
+            html += '</tr>';
+        });
+        
+        document.getElementById('calendarBody').innerHTML = html;
+    }
+    
+    function updateUpcomingJobs() {
+        const today = new Date();
+        const nextWeek = new Date();
+        nextWeek.setDate(today.getDate() + 7);
+        
+        const upcoming = scheduledJobs.filter(job => {
+            const startDate = new Date(job.start_date);
+            return startDate >= today && startDate <= nextWeek;
+        }).sort((a, b) => new Date(a.start_date) - new Date(b.start_date));
+        
+        const container = document.getElementById('upcomingJobs');
+        
+        if (upcoming.length === 0) {
+            container.innerHTML = '<div class="text-center text-muted">No upcoming jobs scheduled</div>';
+            return;
+        }
+        
+        container.innerHTML = upcoming.map(job => `
+            <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
+                <div>
+                    <strong>${job.project_title}</strong><br>
+                    <small class="text-muted">${job.customer}</small>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success">${new Date(job.start_date).toLocaleDateString()}</span><br>
+                    <small>${job.time_slot}</small>
+                </div>
+            </div>
+        `).join('');
+    }
+    
+    function updateWeeklySummary() {
+        const weekDates = getWeekDates(currentWeekStart);
+        let totalJobs = 0;
+        let totalGreen = 0;
+        let totalWorkers = { bricklayer: 0, carpenter: 0, plumber: 0 };
+        
+        weekDates.forEach(date => {
+            const dateStr = formatDate(date);
+            const jobsOnDay = scheduledJobs.filter(job => {
+                const start = new Date(job.start_date);
+                const end = new Date(job.end_date);
+                const current = new Date(dateStr);
+                return current >= start && current <= end;
+            });
+            
+            totalJobs += jobsOnDay.length;
+            totalGreen += jobsOnDay.filter(job => job.green_tech && job.green_tech.length > 0).length;
+            
+            jobsOnDay.forEach(job => {
+                if (job.workers) {
+                    job.workers.forEach(worker => {
+                        if (totalWorkers[worker] !== undefined) totalWorkers[worker]++;
+                    });
+                }
+            });
+        });
+        
+        const summaryHtml = `
+            <div class="row">
+                <div class="col-6 mb-3">
+                    <div class="text-center">
+                        <h3 class="text-success">${totalJobs}</h3>
+                        <small class="text-muted">Total Jobs This Week</small>
+                    </div>
+                </div>
+                <div class="col-6 mb-3">
+                    <div class="text-center">
+                        <h3 class="text-success">${totalGreen}</h3>
+                        <small class="text-muted">Green Projects</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="text-center">
+                        <strong>${totalWorkers.bricklayer}</strong>
+                        <small class="d-block text-muted">Bricklayers</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="text-center">
+                        <strong>${totalWorkers.carpenter}</strong>
+                        <small class="d-block text-muted">Carpenters</small>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <div class="text-center">
+                        <strong>${totalWorkers.plumber}</strong>
+                        <small class="d-block text-muted">Plumbers</small>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('weeklySummary').innerHTML = summaryHtml;
+    }
+    
+    function changeWeek(delta) {
+        currentWeekStart.setDate(currentWeekStart.getDate() + (delta * 7));
+        updateWeekDisplay();
+    }
+    
+    function goToCurrentWeek() {
+        currentWeekStart = getStartOfWeek(new Date());
+        updateWeekDisplay();
+    }
+    
+    function openScheduleModal(date) {
+        document.getElementById('scheduleStartDate').value = date;
+        new bootstrap.Modal(document.getElementById('scheduleJobModal')).show();
+    }
+    
+    function scheduleJob() {
+        const projectSelect = document.getElementById('scheduleProject');
+        const projectId = projectSelect.value;
+        const projectText = projectSelect.options[projectSelect.selectedIndex].text;
+        
+        const workers = [];
+        if (document.getElementById('workerBricklayer').checked) workers.push('bricklayer');
+        if (document.getElementById('workerCarpenter').checked) workers.push('carpenter');
+        if (document.getElementById('workerPlumber').checked) workers.push('plumber');
+        
+        const newJob = {
+            id: scheduledJobs.length + 1,
+            project_id: parseInt(projectId),
+            project_title: projectText.split(' - ')[0],
+            customer: projectText.split(' - ')[1] || 'Customer',
+            start_date: document.getElementById('scheduleStartDate').value,
+            end_date: document.getElementById('scheduleEndDate').value,
+            time_slot: document.getElementById('scheduleTimeSlot').value,
+            workers: workers,
+            status: "scheduled",
+            green_tech: []
+        };
+        
+        if (!newJob.start_date || !newJob.end_date) {
+            alert('Please select start and end dates');
+            return;
+        }
+        
+        scheduledJobs.push(newJob);
+        
+        bootstrap.Modal.getInstance(document.getElementById('scheduleJobModal')).hide();
+        document.getElementById('scheduleJobForm').reset();
+        
+        renderCalendar();
+        updateUpcomingJobs();
+        updateWeeklySummary();
+        
+        alert('Job scheduled successfully!');
+    }
+    
+    function viewJobDetails(jobId) {
+        const job = scheduledJobs.find(j => j.id === jobId);
+        const workersMap = {
+            'bricklayer': '🧱 Bricklayer',
+            'carpenter': '🪚 Carpenter',
+            'plumber': '🔧 Plumber'
+        };
+        
+        alert(`Job Details:\n\nProject: ${job.project_title}\nCustomer: ${job.customer}\nDates: ${job.start_date} to ${job.end_date}\nTime: ${job.time_slot}\nWorkers: ${job.workers ? job.workers.map(w => workersMap[w]).join(', ') : 'Not assigned'}\nStatus: ${job.status}`);
+    }
+    
+    // Initialize calendar
+    updateWeekDisplay();
+</script>
+{% endblock %}

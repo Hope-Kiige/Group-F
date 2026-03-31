@@ -1,0 +1,526 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Materials Orders{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-truck text-success me-2"></i>
+        Materials Orders
+    </h2>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#placeOrderModal">
+        <i class="fas fa-plus me-2"></i>
+        Place New Order
+    </button>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Orders Pending</h6>
+                        <h2 class="mb-0" id="pendingOrders">2</h2>
+                    </div>
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">In Transit</h6>
+                        <h2 class="mb-0" id="inTransitOrders">1</h2>
+                    </div>
+                    <i class="fas fa-shipping-fast fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Delivered</h6>
+                        <h2 class="mb-0" id="deliveredOrders">2</h2>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Total Spent</h6>
+                        <h2 class="mb-0" id="totalSpent">KES 0</h2>
+                    </div>
+                    <i class="fas fa-chart-line fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="input-group">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by project or supplier...">
+            <button class="btn btn-outline-success" onclick="searchOrders()">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="statusFilter" onchange="filterOrders()">
+            <option value="all">All Orders</option>
+            <option value="pending">Pending</option>
+            <option value="shipped">In Transit</option>
+            <option value="delivered">Delivered</option>
+        </select>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-success">
+                    <tr>
+                        <th>Order #</th>
+                        <th>Project</th>
+                        <th>Supplier</th>
+                        <th>Materials</th>
+                        <th>Total Cost</th>
+                        <th>Order Date</th>
+                        <th>Delivery Date</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <!-- Orders will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Place Order Modal -->
+<div class="modal fade" id="placeOrderModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-truck me-2"></i>
+                    Place Material Order
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="placeOrderForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Project *</label>
+                            <select class="form-select" id="orderProject" required>
+                                <option value="">Select Project</option>
+                                <option value="1">Solar Panel Installation - John Mwangi</option>
+                                <option value="2">Eco-friendly Home Renovation - Mary Wanjiku</option>
+                                <option value="3">Rainwater Harvesting System - Peter Omondi</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Supplier *</label>
+                            <select class="form-select" id="orderSupplier" required>
+                                <option value="">Select Supplier</option>
+                                <option value="Builders Warehouse">Builders Warehouse</option>
+                                <option value="Timber Masters">Timber Masters</option>
+                                <option value="Green Materials Ltd">Green Materials Ltd</option>
+                                <option value="SolarTech Kenya">SolarTech Kenya</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Materials *</label>
+                        <textarea class="form-control" id="orderMaterials" rows="3" placeholder="List materials needed (e.g., Cement: 50 bags, Steel: 200kg, etc.)" required></textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Total Cost (KES) *</label>
+                            <input type="number" class="form-control" id="orderCost" placeholder="0.00" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Expected Delivery Date</label>
+                            <input type="date" class="form-control" id="expectedDelivery">
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Materials will be delivered before job start date to ensure timely construction.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="placeOrder()">
+                    <i class="fas fa-check me-2"></i>
+                    Place Order
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Update Order Modal -->
+<div class="modal fade" id="updateOrderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-truck me-2"></i>
+                    Update Order Status
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="updateOrderForm">
+                    <div class="mb-3">
+                        <label class="form-label">Order #</label>
+                        <input type="text" class="form-control" id="updateOrderId" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Update Status</label>
+                        <select class="form-select" id="updateStatus">
+                            <option value="pending">Pending</option>
+                            <option value="shipped">Shipped / In Transit</option>
+                            <option value="delivered">Delivered</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Actual Delivery Date</label>
+                        <input type="date" class="form-control" id="deliveryDate">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="updateOrder()">
+                    <i class="fas fa-save me-2"></i>
+                    Update Status
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sample orders data
+    let orders = [
+        {
+            id: 1,
+            project_id: 1,
+            project_title: "Solar Panel Installation",
+            supplier: "SolarTech Kenya",
+            materials: "Solar panels (10), Inverter, Mounting brackets, Cables",
+            total_cost: 350000,
+            order_date: "2026-03-20",
+            expected_delivery: "2026-03-27",
+            delivery_date: null,
+            status: "shipped"
+        },
+        {
+            id: 2,
+            project_id: 2,
+            project_title: "Eco-friendly Home Renovation",
+            supplier: "Green Materials Ltd",
+            materials: "Recycled flooring (200sqm), Low-VOC paint (20L), Eco-friendly insulation",
+            total_cost: 180000,
+            order_date: "2026-03-25",
+            expected_delivery: "2026-04-01",
+            delivery_date: null,
+            status: "pending"
+        },
+        {
+            id: 3,
+            project_id: 1,
+            project_title: "Solar Panel Installation",
+            supplier: "Builders Warehouse",
+            materials: "Steel brackets, Concrete, Wiring materials",
+            total_cost: 45000,
+            order_date: "2026-03-22",
+            expected_delivery: "2026-03-25",
+            delivery_date: "2026-03-24",
+            status: "delivered"
+        },
+        {
+            id: 4,
+            project_id: 3,
+            project_title: "Rainwater Harvesting System",
+            supplier: "Timber Masters",
+            materials: "5000L Tank, PVC pipes, Filtration system, Gutters",
+            total_cost: 120000,
+            order_date: "2026-03-28",
+            expected_delivery: "2026-04-04",
+            delivery_date: null,
+            status: "pending"
+        },
+        {
+            id: 5,
+            project_id: 2,
+            project_title: "Eco-friendly Home Renovation",
+            supplier: "Builders Warehouse",
+            materials: "Cement (100 bags), Sand (10 tons), Bricks (2000)",
+            total_cost: 95000,
+            order_date: "2026-03-23",
+            expected_delivery: "2026-03-28",
+            delivery_date: "2026-03-27",
+            status: "delivered"
+        }
+    ];
+    
+    let currentOrderId = null;
+    
+    // Load orders on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadOrders();
+        updateStats();
+    });
+    
+    function loadOrders() {
+        const tbody = document.getElementById('ordersTableBody');
+        
+        if (orders.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No orders found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = orders.map(order => {
+            let statusBadge = '';
+            let statusClass = '';
+            
+            if (order.status === 'pending') {
+                statusBadge = '<span class="badge bg-warning">⏳ Pending</span>';
+                statusClass = 'table-warning';
+            } else if (order.status === 'shipped') {
+                statusBadge = '<span class="badge bg-info">🚚 In Transit</span>';
+                statusClass = 'table-info';
+            } else {
+                statusBadge = '<span class="badge bg-success">✓ Delivered</span>';
+                statusClass = 'table-success';
+            }
+            
+            return `
+                <tr class="${statusClass}">
+                    <td><strong>#ORD-${order.id}</strong></td>
+                    <td>${order.project_title}</td>
+                    <td>${order.supplier}</td>
+                    <td>${order.materials.substring(0, 50)}${order.materials.length > 50 ? '...' : ''}</td>
+                    <td class="fw-bold">KES ${order.total_cost.toLocaleString()}</td>
+                    <td>${order.order_date}</td>
+                    <td>${order.delivery_date || order.expected_delivery || 'Pending'}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        ${order.status !== 'delivered' ? `
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="openUpdateModal(${order.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-outline-secondary" onclick="viewOrder(${order.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    function updateStats() {
+        const pending = orders.filter(o => o.status === 'pending').length;
+        const shipped = orders.filter(o => o.status === 'shipped').length;
+        const delivered = orders.filter(o => o.status === 'delivered').length;
+        const totalSpent = orders.reduce((sum, o) => sum + o.total_cost, 0);
+        
+        document.getElementById('pendingOrders').innerText = pending;
+        document.getElementById('inTransitOrders').innerText = shipped;
+        document.getElementById('deliveredOrders').innerText = delivered;
+        document.getElementById('totalSpent').innerHTML = `KES ${totalSpent.toLocaleString()}`;
+    }
+    
+    function placeOrder() {
+        const projectSelect = document.getElementById('orderProject');
+        const projectId = projectSelect.value;
+        const projectText = projectSelect.options[projectSelect.selectedIndex].text;
+        const supplier = document.getElementById('orderSupplier').value;
+        const materials = document.getElementById('orderMaterials').value;
+        const totalCost = parseFloat(document.getElementById('orderCost').value);
+        const expectedDelivery = document.getElementById('expectedDelivery').value;
+        
+        if (!projectId || !supplier || !materials || !totalCost) {
+            alert('Please fill all required fields');
+            return;
+        }
+        
+        const newOrder = {
+            id: orders.length + 1,
+            project_id: parseInt(projectId),
+            project_title: projectText.split(' - ')[0],
+            supplier: supplier,
+            materials: materials,
+            total_cost: totalCost,
+            order_date: new Date().toISOString().split('T')[0],
+            expected_delivery: expectedDelivery,
+            delivery_date: null,
+            status: "pending"
+        };
+        
+        orders.push(newOrder);
+        
+        bootstrap.Modal.getInstance(document.getElementById('placeOrderModal')).hide();
+        document.getElementById('placeOrderForm').reset();
+        
+        loadOrders();
+        updateStats();
+        
+        alert(`Order placed successfully with ${supplier}! Materials will be delivered before the job starts.`);
+    }
+    
+    function openUpdateModal(id) {
+        const order = orders.find(o => o.id === id);
+        currentOrderId = id;
+        
+        document.getElementById('updateOrderId').value = `ORD-${order.id}`;
+        document.getElementById('updateStatus').value = order.status;
+        document.getElementById('deliveryDate').value = order.delivery_date || '';
+        
+        new bootstrap.Modal(document.getElementById('updateOrderModal')).show();
+    }
+    
+    function updateOrder() {
+        const order = orders.find(o => o.id === currentOrderId);
+        const newStatus = document.getElementById('updateStatus').value;
+        const deliveryDate = document.getElementById('deliveryDate').value;
+        
+        order.status = newStatus;
+        if (deliveryDate) {
+            order.delivery_date = deliveryDate;
+        }
+        
+        bootstrap.Modal.getInstance(document.getElementById('updateOrderModal')).hide();
+        
+        loadOrders();
+        updateStats();
+        
+        alert(`Order #ORD-${order.id} status updated to ${newStatus}!`);
+    }
+    
+    function viewOrder(id) {
+        const order = orders.find(o => o.id === id);
+        
+        let statusText = '';
+        if (order.status === 'pending') statusText = 'Pending - Awaiting processing';
+        else if (order.status === 'shipped') statusText = 'In Transit - On the way to site';
+        else statusText = 'Delivered - Received at site';
+        
+        alert(`Order Details:\n\n` +
+              `Order #: ORD-${order.id}\n` +
+              `Project: ${order.project_title}\n` +
+              `Supplier: ${order.supplier}\n` +
+              `Materials: ${order.materials}\n` +
+              `Total Cost: KES ${order.total_cost.toLocaleString()}\n` +
+              `Order Date: ${order.order_date}\n` +
+              `Expected Delivery: ${order.expected_delivery || 'Not set'}\n` +
+              `Actual Delivery: ${order.delivery_date || 'Pending'}\n` +
+              `Status: ${statusText}`);
+    }
+    
+    function searchOrders() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = orders.filter(o => 
+            o.project_title.toLowerCase().includes(searchTerm) ||
+            o.supplier.toLowerCase().includes(searchTerm) ||
+            o.materials.toLowerCase().includes(searchTerm)
+        );
+        
+        const tbody = document.getElementById('ordersTableBody');
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center">No orders found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(order => {
+            let statusBadge = '';
+            if (order.status === 'pending') statusBadge = '<span class="badge bg-warning">Pending</span>';
+            else if (order.status === 'shipped') statusBadge = '<span class="badge bg-info">In Transit</span>';
+            else statusBadge = '<span class="badge bg-success">Delivered</span>';
+            
+            return `
+                <tr>
+                    <td><strong>#ORD-${order.id}</strong></td>
+                    <td>${order.project_title}</td>
+                    <td>${order.supplier}</td>
+                    <td>${order.materials.substring(0, 40)}...</td>
+                    <td>KES ${order.total_cost.toLocaleString()}</td>
+                    <td>${order.order_date}</td>
+                    <td>${order.delivery_date || order.expected_delivery}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info" onclick="viewOrder(${order.id})">View</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    function filterOrders() {
+        const status = document.getElementById('statusFilter').value;
+        if (status === 'all') {
+            loadOrders();
+        } else {
+            const filtered = orders.filter(o => o.status === status);
+            const tbody = document.getElementById('ordersTableBody');
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center">No orders found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = filtered.map(order => {
+                let statusBadge = '';
+                if (order.status === 'pending') statusBadge = '<span class="badge bg-warning">Pending</span>';
+                else if (order.status === 'shipped') statusBadge = '<span class="badge bg-info">In Transit</span>';
+                else statusBadge = '<span class="badge bg-success">Delivered</span>';
+                
+                return `
+                    <tr>
+                        <td><strong>#ORD-${order.id}</strong></td>
+                        <td>${order.project_title}</td>
+                        <td>${order.supplier}</td>
+                        <td>${order.materials.substring(0, 40)}...</td>
+                        <td>KES ${order.total_cost.toLocaleString()}</td>
+                        <td>${order.order_date}</td>
+                        <td>${order.delivery_date || order.expected_delivery}</td>
+                        <td>${statusBadge}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" onclick="viewOrder(${order.id})">View</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+</script>
+{% endblock %}

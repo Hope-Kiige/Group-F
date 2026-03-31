@@ -1,0 +1,234 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Customers{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-users text-success me-2"></i>
+        Customers
+    </h2>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addCustomerModal">
+        <i class="fas fa-plus me-2"></i>
+        Add New Customer
+    </button>
+</div>
+
+<!-- Search Bar -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="input-group">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by name, email, or phone...">
+            <button class="btn btn-outline-success" onclick="searchCustomers()">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Customers Table -->
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Projects</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="customersTableBody">
+                    <tr>
+                        <td colspan="6" class="text-center text-muted">
+                            <i class="fas fa-spinner fa-spin me-2"></i>
+                            Loading customers...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Add Customer Modal -->
+<div class="modal fade" id="addCustomerModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Add New Customer
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addCustomerForm">
+                    <div class="mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" id="fullName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone *</label>
+                        <input type="tel" class="form-control" id="phone" placeholder="+254XXXXXXXXX" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea class="form-control" id="address" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="saveCustomer()">
+                    <i class="fas fa-save me-2"></i>
+                    Save Customer
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sample customer data (temporary - will be replaced with API calls)
+    let customers = [
+        {
+            id: 1,
+            name: "John Mwangi",
+            email: "john@example.com",
+            phone: "+254712345678",
+            address: "Nairobi, Kenya",
+            projects: 2
+        },
+        {
+            id: 2,
+            name: "Mary Wanjiku",
+            email: "mary@example.com",
+            phone: "+254723456789",
+            address: "Kiambu, Kenya",
+            projects: 1
+        },
+        {
+            id: 3,
+            name: "Peter Omondi",
+            email: "peter@example.com",
+            phone: "+254734567890",
+            address: "Kisumu, Kenya",
+            projects: 0
+        }
+    ];
+    
+    // Load customers on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCustomers();
+    });
+    
+    function loadCustomers() {
+        const tbody = document.getElementById('customersTableBody');
+        
+        if (customers.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No customers found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = customers.map(customer => `
+            <tr>
+                <td>
+                    <strong>${customer.name}</strong>
+                </td>
+                <td>${customer.email}</td>
+                <td>${customer.phone}</td>
+                <td>${customer.address || '—'}</td>
+                <td>
+                    <span class="badge bg-primary">${customer.projects} Projects</span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline-info me-1" onclick="viewCustomer(${customer.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="editCustomer(${customer.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function searchCustomers() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = customers.filter(c => 
+            c.name.toLowerCase().includes(searchTerm) ||
+            c.email.toLowerCase().includes(searchTerm) ||
+            c.phone.includes(searchTerm)
+        );
+        
+        const tbody = document.getElementById('customersTableBody');
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">No customers found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(customer => `
+            <tr>
+                <td><strong>${customer.name}</strong></td>
+                <td>${customer.email}</td>
+                <td>${customer.phone}</td>
+                <td>${customer.address || '—'}</td>
+                <td><span class="badge bg-primary">${customer.projects} Projects</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-info me-1" onclick="viewCustomer(${customer.id})">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="editCustomer(${customer.id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    }
+    
+    function saveCustomer() {
+        const newCustomer = {
+            id: customers.length + 1,
+            name: document.getElementById('fullName').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            address: document.getElementById('address').value,
+            projects: 0
+        };
+        
+        if (!newCustomer.name || !newCustomer.email || !newCustomer.phone) {
+            alert('Please fill all required fields');
+            return;
+        }
+        
+        customers.push(newCustomer);
+        
+        // Close modal and clear form
+        bootstrap.Modal.getInstance(document.getElementById('addCustomerModal')).hide();
+        document.getElementById('addCustomerForm').reset();
+        
+        // Refresh table
+        loadCustomers();
+        
+        alert('Customer added successfully!');
+    }
+    
+    function viewCustomer(id) {
+        const customer = customers.find(c => c.id === id);
+        alert(`Customer Details:\nName: ${customer.name}\nEmail: ${customer.email}\nPhone: ${customer.phone}\nAddress: ${customer.address}`);
+    }
+    
+    function editCustomer(id) {
+        alert('Edit feature coming soon!');
+    }
+</script>
+{% endblock %}

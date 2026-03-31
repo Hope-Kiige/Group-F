@@ -1,0 +1,280 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Reports & Analytics{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-chart-line text-success me-2"></i>
+        Reports & Analytics
+    </h2>
+    <div>
+        <button class="btn btn-outline-success me-2" onclick="window.location.reload()">
+            <i class="fas fa-sync-alt me-1"></i> Refresh
+        </button>
+        <button class="btn btn-success" onclick="exportAllReports()">
+            <i class="fas fa-download me-2"></i>
+            Export All Reports
+        </button>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Total Revenue</h6>
+                        <h2 class="mb-0">KES 1,880,000</h2>
+                    </div>
+                    <i class="fas fa-chart-line fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Active Projects</h6>
+                        <h2 class="mb-0">2</h2>
+                    </div>
+                    <i class="fas fa-building fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Customer Satisfaction</h6>
+                        <h2 class="mb-0">96%</h2>
+                    </div>
+                    <i class="fas fa-smile fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">On-Time Delivery</h6>
+                        <h2 class="mb-0">94%</h2>
+                    </div>
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Report Cards -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-file-invoice-dollar fa-3x text-success mb-3"></i>
+                <h5>Financial Report</h5>
+                <p class="text-muted">Revenue, expenses, profit analysis</p>
+                <button class="btn btn-outline-success" onclick="generateFinancialReport()">
+                    Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
+                <h5>Project Timeline Report</h5>
+                <p class="text-muted">Project durations and milestones</p>
+                <button class="btn btn-outline-primary" onclick="generateTimelineReport()">
+                    Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-leaf fa-3x text-success mb-3"></i>
+                <h5>Sustainability Report</h5>
+                <p class="text-muted">Green technology impact</p>
+                <button class="btn btn-outline-success" onclick="window.location.href='/green-tech/'">
+                    View Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-users fa-3x text-info mb-3"></i>
+                <h5>Customer Report</h5>
+                <p class="text-muted">Customer demographics and activity</p>
+                <button class="btn btn-outline-info" onclick="generateCustomerReport()">
+                    Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-bar fa-3x text-warning mb-3"></i>
+                <h5>Performance Report</h5>
+                <p class="text-muted">Worker and project performance</p>
+                <button class="btn btn-outline-warning" onclick="generatePerformanceReport()">
+                    Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <i class="fas fa-truck fa-3x text-secondary mb-3"></i>
+                <h5>Materials Report</h5>
+                <p class="text-muted">Material usage and costs</p>
+                <button class="btn btn-outline-secondary" onclick="generateMaterialsReport()">
+                    Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-history text-success me-2"></i>
+                    Recent Activity
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="d-flex mb-3">
+                        <div class="me-3">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                        <div>
+                            <strong>Invoice #INV-2 paid</strong>
+                            <div class="text-muted small">KES 1,200,000 - Mary Wanjiku</div>
+                            <small class="text-muted">2 hours ago</small>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-3">
+                        <div class="me-3">
+                            <i class="fas fa-truck text-info"></i>
+                        </div>
+                        <div>
+                            <strong>Materials delivered</strong>
+                            <div class="text-muted small">Solar panels delivered for Solar Panel Installation</div>
+                            <small class="text-muted">Yesterday</small>
+                        </div>
+                    </div>
+                    <div class="d-flex mb-3">
+                        <div class="me-3">
+                            <i class="fas fa-file-invoice text-warning"></i>
+                        </div>
+                        <div>
+                            <strong>New estimate generated</strong>
+                            <div class="text-muted small">#EST-3 - Rainwater Harvesting System - KES 250,000</div>
+                            <small class="text-muted">2 days ago</small>
+                        </div>
+                    </div>
+                    <div class="d-flex">
+                        <div class="me-3">
+                            <i class="fas fa-leaf text-success"></i>
+                        </div>
+                        <div>
+                            <strong>Green project completed</strong>
+                            <div class="text-muted small">Commercial Building LED Retrofit - 3,200 kg CO₂ saved</div>
+                            <small class="text-muted">3 days ago</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function generateFinancialReport() {
+        alert(`Financial Report\n\n` +
+              `Period: March 2026\n` +
+              `Total Revenue: KES 1,880,000\n` +
+              `Materials Cost: KES 790,000\n` +
+              `Labor Cost: KES 620,000\n` +
+              `Gross Profit: KES 470,000\n` +
+              `Profit Margin: 25%\n\n` +
+              `This report will be available for download in PDF format.`);
+    }
+    
+    function generateTimelineReport() {
+        alert(`Project Timeline Report\n\n` +
+              `Projects Completed: 2\n` +
+              `Projects In Progress: 2\n` +
+              `Average Duration: 45 days\n` +
+              `On-Time Completion: 94%\n\n` +
+              `Delayed Projects: 1 (Solar Panel Installation - delayed by 3 days due to weather)\n\n` +
+              `This report will be available for download in PDF format.`);
+    }
+    
+    function generateCustomerReport() {
+        alert(`Customer Report\n\n` +
+              `Total Customers: 3\n` +
+              `New Customers (This Month): 1\n` +
+              `Repeat Customers: 1 (John Mwangi - 2 projects)\n` +
+              `Most Active: John Mwangi (2 projects)\n` +
+              `Customer Satisfaction: 96%\n\n` +
+              `This report will be available for download in PDF format.`);
+    }
+    
+    function generatePerformanceReport() {
+        alert(`Performance Report\n\n` +
+              `Worker Performance:\n` +
+              `- Bricklayers: 95% efficiency\n` +
+              `- Carpenters: 92% efficiency\n` +
+              `- Plumbers: 98% efficiency\n\n` +
+              `Project Performance:\n` +
+              `- Best Performing: Eco-friendly Home Renovation\n` +
+              `- Most Challenging: Solar Panel Installation\n\n` +
+              `This report will be available for download in PDF format.`);
+    }
+    
+    function generateMaterialsReport() {
+        alert(`Materials Report\n\n` +
+              `Total Materials Cost: KES 790,000\n` +
+              `Most Used Material: Cement (250 bags)\n` +
+              `Most Expensive: Solar Panels (KES 350,000)\n` +
+              `Green Materials: 35% of total\n` +
+              `Top Supplier: Builders Warehouse (45% of orders)\n\n` +
+              `This report will be available for download in PDF format.`);
+    }
+    
+    function exportAllReports() {
+        alert(`Exporting all reports...\n\n` +
+              `The following reports will be downloaded:\n` +
+              `1. Financial_Report_March2026.csv\n` +
+              `2. Project_Timeline_Report.csv\n` +
+              `3. Customer_Report.csv\n` +
+              `4. Performance_Report.csv\n` +
+              `5. Materials_Report.csv\n\n` +
+              `In a production system, these would be actual CSV/PDF files.`);
+    }
+</script>
+{% endblock %}

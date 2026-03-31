@@ -1,0 +1,177 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Dashboard Home{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card bg-success text-white mb-4">
+            <div class="card-body">
+                <h1 class="card-title">
+                    <i class="fas fa-leaf me-2"></i>
+                    Welcome to Bidii Builders Dashboard!
+                </h1>
+                <p class="card-text">
+                    Your construction management system with green technology tracking is now running.
+                </p>
+                <hr class="bg-white">
+                <p class="mb-0">
+                    <i class="fas fa-chart-line me-1"></i>
+                    Green Software Engineering - Lean Development Approach
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-0">Total Projects</p>
+                        <h2 class="stat-number mb-0">0</h2>
+                    </div>
+                    <i class="fas fa-building stat-icon text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-0">Active Projects</p>
+                        <h2 class="stat-number mb-0">0</h2>
+                    </div>
+                    <i class="fas fa-play-circle stat-icon text-primary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-0">Pending Payments</p>
+                        <h2 class="stat-number mb-0">KES 0</h2>
+                    </div>
+                    <i class="fas fa-dollar-sign stat-icon text-warning"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3 mb-3">
+        <div class="card stat-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-muted mb-0">Green Projects</p>
+                        <h2 class="stat-number mb-0">0</h2>
+                    </div>
+                    <i class="fas fa-leaf stat-icon text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-star text-success me-2"></i>
+                    System Features
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-item d-flex">
+                            <i class="fas fa-file-invoice-dollar feature-icon me-3"></i>
+                            <div>
+                                <h6 class="mb-1">📄 Estimates</h6>
+                                <small class="text-muted">Generate within 3 days of property visit</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-item d-flex">
+                            <i class="fas fa-calendar-alt feature-icon me-3"></i>
+                            <div>
+                                <h6 class="mb-1">📅 Job Scheduling</h6>
+                                <small class="text-muted">Based on job size and availability</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-item d-flex">
+                            <i class="fas fa-receipt feature-icon me-3"></i>
+                            <div>
+                                <h6 class="mb-1">💰 Invoices</h6>
+                                <small class="text-muted">30-day payment terms</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-item d-flex">
+                            <i class="fas fa-truck feature-icon me-3"></i>
+                            <div>
+                                <h6 class="mb-1">📦 Material Orders</h6>
+                                <small class="text-muted">Track orders from suppliers</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-item d-flex">
+                            <i class="fas fa-chart-line feature-icon me-3"></i>
+                            <div>
+                                <h6 class="mb-1">📊 Analytics</h6>
+                                <small class="text-muted">Dashboard with Matplotlib charts</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="feature-item d-flex">
+                            <i class="fas fa-leaf feature-icon me-3"></i>
+                            <div>
+                                <h6 class="mb-1">🌱 Green Tech Tracking</h6>
+                                <small class="text-muted">Monitor sustainable construction</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Projects Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock text-success me-2"></i>
+                    Recent Projects
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info text-center mb-0">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No projects yet. Add your first project to get started!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,518 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Green Technology Report{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-leaf text-success me-2"></i>
+        Green Technology Report
+    </h2>
+    <button class="btn btn-success" onclick="window.print()">
+        <i class="fas fa-print me-2"></i>
+        Print Report
+    </button>
+</div>
+
+<!-- Sustainability Score Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card bg-success text-white">
+            <div class="card-body text-center">
+                <i class="fas fa-chart-line fa-3x mb-2"></i>
+                <h3>Green Construction Impact</h3>
+                <p class="mb-0">Tracking sustainable building practices and environmental benefits</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-leaf fa-2x text-success mb-2"></i>
+                <h3 id="greenProjectsCount">4</h3>
+                <p class="text-muted mb-0">Green Projects</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-chart-line fa-2x text-primary mb-2"></i>
+                <h3 id="greenPercentage">67%</h3>
+                <p class="text-muted mb-0">of Total Projects</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-trophy fa-2x text-warning mb-2"></i>
+                <h3 id="totalGreenTech">12</h3>
+                <p class="text-muted mb-0">Green Technologies Used</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-chart-bar fa-2x text-info mb-2"></i>
+                <h3 id="carbonSaved">15,200</h3>
+                <p class="text-muted mb-0">kg CO₂ Saved</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Charts Row -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-pie text-success me-2"></i>
+                    Green vs Non-Green Projects
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="greenVsNonGreenChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar text-success me-2"></i>
+                    Green Technologies Usage
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="techUsageChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Second Row of Charts -->
+<div class="row mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-success me-2"></i>
+                    Green Projects Trend
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="trendChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-line text-success me-2"></i>
+                    Monthly Green Investment
+                </h5>
+            </div>
+            <div class="card-body">
+                <canvas id="investmentChart" height="250"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Green Projects Showcase -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-leaf text-success me-2"></i>
+                    Featured Green Projects
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="greenProjectsShowcase">
+                    <!-- Projects will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Environmental Impact Summary -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-globe text-success me-2"></i>
+                    Environmental Impact Summary
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-solar-panel fa-2x text-warning mb-2"></i>
+                            <h4>45 kWp</h4>
+                            <p class="text-muted mb-0">Solar Power Installed</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-water fa-2x text-info mb-2"></i>
+                            <h4>25,000 L</h4>
+                            <p class="text-muted mb-0">Rainwater Capacity</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-lightbulb fa-2x text-warning mb-2"></i>
+                            <h4>850</h4>
+                            <p class="text-muted mb-0">LED Fixtures Installed</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="p-3 border rounded">
+                            <i class="fas fa-recycle fa-2x text-success mb-2"></i>
+                            <h4>12.5 tons</h4>
+                            <p class="text-muted mb-0">Recycled Materials</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Green Technologies Detail Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-table text-success me-2"></i>
+                    Green Technologies by Project
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-success">
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Customer</th>
+                                <th>Green Technologies</th>
+                                <th>CO₂ Saved (kg)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="greenTechTable">
+                            <!-- Data will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Green projects data
+    const greenProjects = [
+        {
+            id: 1,
+            name: "Solar Panel Installation",
+            customer: "John Mwangi",
+            technologies: ["Solar Panels", "LED Lighting"],
+            co2_saved: 5200,
+            status: "completed",
+            cost: 500000,
+            date: "2026-03-01"
+        },
+        {
+            id: 2,
+            name: "Eco-friendly Home Renovation",
+            customer: "Mary Wanjiku",
+            technologies: ["Rainwater Harvesting", "LED Lighting", "Eco-friendly Insulation"],
+            co2_saved: 3800,
+            status: "in_progress",
+            cost: 1200000,
+            date: "2026-03-20"
+        },
+        {
+            id: 3,
+            name: "Rainwater Harvesting System",
+            customer: "Peter Omondi",
+            technologies: ["Rainwater Harvesting"],
+            co2_saved: 1200,
+            status: "scheduled",
+            cost: 250000,
+            date: "2026-03-28"
+        },
+        {
+            id: 4,
+            name: "Commercial Building LED Retrofit",
+            customer: "John Mwangi",
+            technologies: ["LED Lighting", "Energy Efficient Appliances"],
+            co2_saved: 3200,
+            status: "completed",
+            cost: 180000,
+            date: "2026-02-28"
+        },
+        {
+            id: 5,
+            name: "Solar Water Heating System",
+            customer: "Sarah Kimani",
+            technologies: ["Solar Panels", "Energy Efficient Appliances"],
+            co2_saved: 1800,
+            status: "in_progress",
+            cost: 350000,
+            date: "2026-03-15"
+        }
+    ];
+    
+    // Technology usage counts
+    const techCounts = {
+        "Solar Panels": 2,
+        "LED Lighting": 3,
+        "Rainwater Harvesting": 2,
+        "Eco-friendly Insulation": 1,
+        "Energy Efficient Appliances": 2
+    };
+    
+    // Monthly data for trend chart
+    const monthlyData = {
+        months: ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        greenProjects: [1, 2, 4, 3, 2, 1],
+        investment: [180000, 350000, 1950000, 250000, 180000, 0]
+    };
+    
+    // Load data on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadGreenProjectsShowcase();
+        loadGreenTechTable();
+        updateMetrics();
+        initializeCharts();
+    });
+    
+    function updateMetrics() {
+        const totalGreen = greenProjects.length;
+        const totalProjects = 6; // From previous data
+        const percentage = Math.round((totalGreen / totalProjects) * 100);
+        const totalTechUsed = Object.values(techCounts).reduce((a, b) => a + b, 0);
+        const totalCO2Saved = greenProjects.reduce((sum, p) => sum + p.co2_saved, 0);
+        
+        document.getElementById('greenProjectsCount').innerText = totalGreen;
+        document.getElementById('greenPercentage').innerText = `${percentage}%`;
+        document.getElementById('totalGreenTech').innerText = totalTechUsed;
+        document.getElementById('carbonSaved').innerText = totalCO2Saved.toLocaleString();
+    }
+    
+    function initializeCharts() {
+        // Chart 1: Green vs Non-Green Projects
+        const ctx1 = document.getElementById('greenVsNonGreenChart').getContext('2d');
+        new Chart(ctx1, {
+            type: 'doughnut',
+            data: {
+                labels: ['Green Projects', 'Non-Green Projects'],
+                datasets: [{
+                    data: [5, 1],
+                    backgroundColor: ['#28a745', '#dc3545'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // Chart 2: Technology Usage
+        const ctx2 = document.getElementById('techUsageChart').getContext('2d');
+        new Chart(ctx2, {
+            type: 'bar',
+            data: {
+                labels: Object.keys(techCounts),
+                datasets: [{
+                    label: 'Number of Projects',
+                    data: Object.values(techCounts),
+                    backgroundColor: '#28a745',
+                    borderRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Chart 3: Green Projects Trend
+        const ctx3 = document.getElementById('trendChart').getContext('2d');
+        new Chart(ctx3, {
+            type: 'line',
+            data: {
+                labels: monthlyData.months,
+                datasets: [{
+                    label: 'Green Projects',
+                    data: monthlyData.greenProjects,
+                    borderColor: '#28a745',
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top'
+                    }
+                }
+            }
+        });
+        
+        // Chart 4: Monthly Investment
+        const ctx4 = document.getElementById('investmentChart').getContext('2d');
+        new Chart(ctx4, {
+            type: 'line',
+            data: {
+                labels: monthlyData.months,
+                datasets: [{
+                    label: 'Investment (KES)',
+                    data: monthlyData.investment,
+                    borderColor: '#ffc107',
+                    backgroundColor: 'rgba(255, 193, 7, 0.1)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return `KES ${context.raw.toLocaleString()}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+    
+    function loadGreenProjectsShowcase() {
+        const container = document.getElementById('greenProjectsShowcase');
+        
+        container.innerHTML = greenProjects.map(project => {
+            const techBadges = project.technologies.map(tech => 
+                `<span class="badge bg-success me-1">🌱 ${tech}</span>`
+            ).join('');
+            
+            const statusColors = {
+                'completed': 'success',
+                'in_progress': 'primary',
+                'scheduled': 'info'
+            };
+            
+            return `
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100 border-success">
+                        <div class="card-header bg-success text-white">
+                            <h6 class="mb-0">${project.name}</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-user me-1"></i> ${project.customer}
+                            </p>
+                            <div class="mb-2">
+                                <strong>Green Technologies:</strong><br>
+                                ${techBadges}
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-6">
+                                    <small class="text-muted">CO₂ Saved:</small>
+                                    <strong class="text-success">${project.co2_saved.toLocaleString()} kg</strong>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <span class="badge bg-${statusColors[project.status]}">
+                                        ${project.status}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+    
+    function loadGreenTechTable() {
+        const tbody = document.getElementById('greenTechTable');
+        
+        tbody.innerHTML = greenProjects.map(project => {
+            const techList = project.technologies.map(tech => `🌱 ${tech}`).join(', ');
+            const statusColors = {
+                'completed': 'success',
+                'in_progress': 'primary',
+                'scheduled': 'info'
+            };
+            
+            return `
+                <tr>
+                    <td><strong>${project.name}</strong></td>
+                    <td>${project.customer}</td>
+                    <td>${techList}</td>
+                    <td class="text-success fw-bold">${project.co2_saved.toLocaleString()} kg</td>
+                    <td><span class="badge bg-${statusColors[project.status]}">${project.status}</span></td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    // Function to export report as CSV
+    function exportReport() {
+        let csv = "Project Name,Customer,Green Technologies,CO₂ Saved (kg),Status\n";
+        
+        greenProjects.forEach(project => {
+            const techList = project.technologies.join("; ");
+            csv += `"${project.name}","${project.customer}","${techList}",${project.co2_saved},${project.status}\n`;
+        });
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'green_tech_report.csv';
+        a.click();
+        window.URL.revokeObjectURL(url);
+        
+        alert('Report exported successfully!');
+    }
+</script>
+{% endblock %}

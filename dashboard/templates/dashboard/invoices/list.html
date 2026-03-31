@@ -1,0 +1,795 @@
+{% extends 'dashboard/base.html' %}
+
+{% block title %}Invoices{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="fas fa-receipt text-success me-2"></i>
+        Invoices & Payments
+    </h2>
+    <div>
+        <button class="btn btn-outline-success me-2" onclick="window.location.reload()">
+            <i class="fas fa-sync-alt me-1"></i> Refresh
+        </button>
+        <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#generateInvoiceModal">
+            <i class="fas fa-plus me-2"></i>
+            Generate Invoice
+        </button>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3 mb-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Pending Invoices</h6>
+                        <h2 class="mb-0" id="pendingCount">3</h2>
+                    </div>
+                    <i class="fas fa-clock fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Overdue Invoices</h6>
+                        <h2 class="mb-0" id="overdueCount">1</h2>
+                    </div>
+                    <i class="fas fa-exclamation-triangle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Paid Invoices</h6>
+                        <h2 class="mb-0" id="paidCount">1</h2>
+                    </div>
+                    <i class="fas fa-check-circle fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">Total Outstanding</h6>
+                        <h2 class="mb-0" id="totalOutstanding">KES 0</h2>
+                    </div>
+                    <i class="fas fa-chart-line fa-2x"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="input-group">
+            <input type="text" class="form-control" id="searchInput" placeholder="Search by project or customer...">
+            <button class="btn btn-outline-success" onclick="searchInvoices()">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="statusFilter" onchange="filterInvoices()">
+            <option value="all">All Invoices</option>
+            <option value="pending">Pending</option>
+            <option value="paid">Paid</option>
+            <option value="overdue">Overdue</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select class="form-select" id="dateFilter" onchange="filterByDate()">
+            <option value="all">All Time</option>
+            <option value="this_month">This Month</option>
+            <option value="last_month">Last Month</option>
+            <option value="overdue_only">Overdue Only</option>
+        </select>
+    </div>
+</div>
+
+<!-- Invoices Table -->
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-success">
+                    <tr>
+                        <th>Invoice #</th>
+                        <th>Project</th>
+                        <th>Customer</th>
+                        <th>Amount (KES)</th>
+                        <th>Issue Date</th>
+                        <th>Due Date</th>
+                        <th>Days Left/Overdue</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="invoicesTableBody">
+                    <!-- Invoices will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Generate Invoice Modal -->
+<div class="modal fade" id="generateInvoiceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-invoice me-2"></i>
+                    Generate New Invoice
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Business Rule:</strong> Invoices have <strong>30-day payment terms</strong> from issue date.
+                </div>
+                
+                <form id="generateInvoiceForm">
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label class="form-label">Select Completed Project *</label>
+                            <select class="form-select" id="invoiceProject" required onchange="loadProjectAmount()">
+                                <option value="">Choose a completed project...</option>
+                                <option value="1">Solar Panel Installation - John Mwangi (Completed)</option>
+                                <option value="2">Eco-friendly Home Renovation - Mary Wanjiku (Completed)</option>
+                                <option value="4">Commercial Building LED Retrofit - John Mwangi (Completed)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Issue Date *</label>
+                            <input type="date" class="form-control" id="issueDate" required>
+                            <small class="text-muted">Due date will be 30 days from issue date</small>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Final Amount (KES) *</label>
+                            <input type="number" class="form-control" id="invoiceAmount" placeholder="0.00" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Due Date (Auto-calculated)</label>
+                            <input type="text" class="form-control" id="dueDateDisplay" readonly>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" id="invoiceDescription" rows="2" placeholder="Work completed, materials used, etc."></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-clock me-2"></i>
+                        <strong>Payment Terms:</strong> Payment is due within 30 days. Late payments will be marked as overdue.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="generateInvoice()">
+                    <i class="fas fa-save me-2"></i>
+                    Generate Invoice (30-day terms)
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Record Payment Modal -->
+<div class="modal fade" id="recordPaymentModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-money-bill-wave me-2"></i>
+                    Record Payment
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="paymentForm">
+                    <div class="mb-3">
+                        <label class="form-label">Invoice #</label>
+                        <input type="text" class="form-control" id="paymentInvoiceId" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Amount Due</label>
+                        <input type="text" class="form-control" id="amountDue" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Amount *</label>
+                        <input type="number" class="form-control" id="paymentAmount" placeholder="0.00" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Method *</label>
+                        <select class="form-select" id="paymentMethod" required>
+                            <option value="">Select Method</option>
+                            <option value="cash">Cash</option>
+                            <option value="bank_transfer">Bank Transfer</option>
+                            <option value="mpesa">M-Pesa</option>
+                            <option value="cheque">Cheque</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Reference Number</label>
+                        <input type="text" class="form-control" id="paymentReference" placeholder="Transaction/Reference ID">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Payment Date</label>
+                        <input type="date" class="form-control" id="paymentDate" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="processPayment()">
+                    <i class="fas fa-check-circle me-2"></i>
+                    Record Payment
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- View Invoice Modal -->
+<div class="modal fade" id="viewInvoiceModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-file-invoice-dollar me-2"></i>
+                    Invoice Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="invoiceDetails">
+                <!-- Invoice details will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" id="paymentBtn" onclick="openPaymentModal()">
+                    <i class="fas fa-money-bill-wave me-2"></i>
+                    Record Payment
+                </button>
+                <button type="button" class="btn btn-primary" onclick="printInvoice()">
+                    <i class="fas fa-print me-2"></i>
+                    Print Invoice
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Sample invoices data
+    let invoices = [
+        {
+            id: 1,
+            project_id: 1,
+            project_title: "Solar Panel Installation",
+            customer: "John Mwangi",
+            amount: 500000,
+            issue_date: "2026-03-01",
+            due_date: "2026-03-31",
+            status: "overdue",
+            paid_date: null,
+            payment_method: null,
+            description: "5kW solar panel system installation with battery backup"
+        },
+        {
+            id: 2,
+            project_id: 2,
+            project_title: "Eco-friendly Home Renovation",
+            customer: "Mary Wanjiku",
+            amount: 1200000,
+            issue_date: "2026-03-20",
+            due_date: "2026-04-19",
+            status: "pending",
+            paid_date: null,
+            payment_method: null,
+            description: "Complete home renovation using sustainable materials"
+        },
+        {
+            id: 3,
+            project_id: 4,
+            project_title: "Commercial Building LED Retrofit",
+            customer: "John Mwangi",
+            amount: 180000,
+            issue_date: "2026-03-05",
+            due_date: "2026-04-04",
+            status: "paid",
+            paid_date: "2026-03-28",
+            payment_method: "bank_transfer",
+            description: "LED lighting replacement for commercial building"
+        }
+    ];
+    
+    let currentInvoiceId = null;
+    
+    // Load invoices on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadInvoices();
+        updateStats();
+    });
+    
+    function loadInvoices() {
+        const tbody = document.getElementById('invoicesTableBody');
+        
+        if (invoices.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted">No invoices found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = invoices.map(invoice => {
+            const today = new Date();
+            const dueDate = new Date(invoice.due_date);
+            const daysDiff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+            
+            let daysDisplay = '';
+            let daysClass = '';
+            
+            if (invoice.status === 'paid') {
+                daysDisplay = `<span class="text-success">Paid</span>`;
+            } else if (daysDiff > 0) {
+                daysDisplay = `<span class="text-warning">${daysDiff} days left</span>`;
+                daysClass = 'table-warning';
+            } else if (daysDiff === 0) {
+                daysDisplay = `<span class="text-danger">Due today!</span>`;
+                daysClass = 'table-danger';
+            } else {
+                daysDisplay = `<span class="text-danger">${Math.abs(daysDiff)} days overdue</span>`;
+                daysClass = 'table-danger';
+            }
+            
+            let statusBadge = '';
+            if (invoice.status === 'paid') {
+                statusBadge = '<span class="badge bg-success">✓ Paid</span>';
+            } else if (invoice.status === 'overdue') {
+                statusBadge = '<span class="badge bg-danger">⚠ Overdue</span>';
+            } else {
+                statusBadge = '<span class="badge bg-warning">⏳ Pending</span>';
+            }
+            
+            return `
+                <tr class="${daysClass}">
+                    <td><strong>#INV-${invoice.id}</strong></td>
+                    <td>${invoice.project_title}</td>
+                    <td>${invoice.customer}</td>
+                    <td class="fw-bold">KES ${invoice.amount.toLocaleString()}</td>
+                    <td>${invoice.issue_date}</td>
+                    <td>${invoice.due_date}</td>
+                    <td>${daysDisplay}</td>
+                    <td>${statusBadge}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info me-1" onclick="viewInvoice(${invoice.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        ${invoice.status !== 'paid' ? `
+                        <button class="btn btn-sm btn-outline-success me-1" onclick="openPaymentModalFromList(${invoice.id})">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </button>
+                        ` : ''}
+                        <button class="btn btn-sm btn-outline-secondary" onclick="printInvoiceFromList(${invoice.id})">
+                            <i class="fas fa-print"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    function updateStats() {
+        const pending = invoices.filter(i => i.status === 'pending').length;
+        const overdue = invoices.filter(i => i.status === 'overdue').length;
+        const paid = invoices.filter(i => i.status === 'paid').length;
+        const outstanding = invoices
+            .filter(i => i.status !== 'paid')
+            .reduce((sum, i) => sum + i.amount, 0);
+        
+        document.getElementById('pendingCount').innerText = pending;
+        document.getElementById('overdueCount').innerText = overdue;
+        document.getElementById('paidCount').innerText = paid;
+        document.getElementById('totalOutstanding').innerHTML = `KES ${outstanding.toLocaleString()}`;
+    }
+    
+    function loadProjectAmount() {
+        const projectId = document.getElementById('invoiceProject').value;
+        const amounts = {
+            1: 500000,
+            2: 1200000,
+            4: 180000
+        };
+        
+        if (projectId && amounts[projectId]) {
+            document.getElementById('invoiceAmount').value = amounts[projectId];
+        }
+    }
+    
+    document.getElementById('issueDate').addEventListener('change', function() {
+        const issueDate = new Date(this.value);
+        if (issueDate) {
+            const dueDate = new Date(issueDate);
+            dueDate.setDate(dueDate.getDate() + 30);
+            document.getElementById('dueDateDisplay').value = dueDate.toISOString().split('T')[0];
+        }
+    });
+    
+    function generateInvoice() {
+        const projectId = document.getElementById('invoiceProject').value;
+        const issueDate = document.getElementById('issueDate').value;
+        const amount = parseFloat(document.getElementById('invoiceAmount').value);
+        const description = document.getElementById('invoiceDescription').value;
+        
+        if (!projectId || !issueDate || !amount) {
+            alert('Please fill all required fields');
+            return;
+        }
+        
+        const projectNames = {
+            1: { title: "Solar Panel Installation", customer: "John Mwangi" },
+            2: { title: "Eco-friendly Home Renovation", customer: "Mary Wanjiku" },
+            4: { title: "Commercial Building LED Retrofit", customer: "John Mwangi" }
+        };
+        
+        const dueDate = new Date(issueDate);
+        dueDate.setDate(dueDate.getDate() + 30);
+        
+        const newInvoice = {
+            id: invoices.length + 1,
+            project_id: parseInt(projectId),
+            project_title: projectNames[projectId].title,
+            customer: projectNames[projectId].customer,
+            amount: amount,
+            issue_date: issueDate,
+            due_date: dueDate.toISOString().split('T')[0],
+            status: "pending",
+            paid_date: null,
+            payment_method: null,
+            description: description
+        };
+        
+        invoices.push(newInvoice);
+        
+        bootstrap.Modal.getInstance(document.getElementById('generateInvoiceModal')).hide();
+        document.getElementById('generateInvoiceForm').reset();
+        
+        loadInvoices();
+        updateStats();
+        
+        alert(`Invoice generated successfully! Payment due by ${newInvoice.due_date} (30 days from issue date).`);
+    }
+    
+    function viewInvoice(id) {
+        const invoice = invoices.find(i => i.id === id);
+        currentInvoiceId = id;
+        
+        const today = new Date();
+        const dueDate = new Date(invoice.due_date);
+        const daysDiff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+        
+        let paymentStatus = '';
+        if (invoice.status === 'paid') {
+            paymentStatus = `<span class="badge bg-success">Paid on ${invoice.paid_date}</span>`;
+        } else if (invoice.status === 'overdue') {
+            paymentStatus = `<span class="badge bg-danger">Overdue by ${Math.abs(daysDiff)} days</span>`;
+        } else {
+            paymentStatus = `<span class="badge bg-warning">Pending - ${daysDiff} days remaining</span>`;
+        }
+        
+        const modal = document.getElementById('invoiceDetails');
+        modal.innerHTML = `
+            <div class="row mb-3">
+                <div class="col-12 text-center">
+                    <h3>Bidii Quality Builders</h3>
+                    <p class="text-muted">Green Construction Services</p>
+                    <h5>TAX INVOICE</h5>
+                    <hr>
+                </div>
+            </div>
+            
+            <div class="row">
+                <div class="col-6">
+                    <strong>Invoice #:</strong> INV-${invoice.id}
+                </div>
+                <div class="col-6 text-end">
+                    <strong>Issue Date:</strong> ${invoice.issue_date}
+                </div>
+            </div>
+            
+            <div class="row mt-2">
+                <div class="col-6">
+                    <strong>Due Date:</strong> ${invoice.due_date}
+                </div>
+                <div class="col-6 text-end">
+                    <strong>Status:</strong> ${paymentStatus}
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-12">
+                    <strong>Bill To:</strong><br>
+                    ${invoice.customer}<br>
+                    ${invoice.project_title}
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-12">
+                    <strong>Description of Services:</strong>
+                    <p>${invoice.description || 'Construction services as per agreement'}</p>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-8">
+                    <strong>Total Amount Due:</strong>
+                </div>
+                <div class="col-4 text-end">
+                    <h4 class="text-success">KES ${invoice.amount.toLocaleString()}</h4>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <div class="row">
+                <div class="col-12">
+                    <small class="text-muted">
+                        <i class="fas fa-clock me-1"></i>
+                        Payment Terms: 30 days from issue date.
+                        ${invoice.status !== 'paid' ? 'Please ensure payment is made by the due date to avoid late fees.' : 'Thank you for your payment!'}
+                    </small>
+                </div>
+            </div>
+        `;
+        
+        // Enable/disable payment button
+        const paymentBtn = document.getElementById('paymentBtn');
+        if (invoice.status === 'paid') {
+            paymentBtn.disabled = true;
+            paymentBtn.style.opacity = '0.5';
+        } else {
+            paymentBtn.disabled = false;
+            paymentBtn.style.opacity = '1';
+        }
+        
+        new bootstrap.Modal(document.getElementById('viewInvoiceModal')).show();
+    }
+    
+    function openPaymentModal() {
+        if (currentInvoiceId) {
+            openPaymentModalFromList(currentInvoiceId);
+        }
+    }
+    
+    function openPaymentModalFromList(id) {
+        const invoice = invoices.find(i => i.id === id);
+        currentInvoiceId = id;
+        
+        document.getElementById('paymentInvoiceId').value = `INV-${invoice.id}`;
+        document.getElementById('amountDue').value = `KES ${invoice.amount.toLocaleString()}`;
+        document.getElementById('paymentAmount').value = invoice.amount;
+        document.getElementById('paymentDate').value = new Date().toISOString().split('T')[0];
+        
+        bootstrap.Modal.getInstance(document.getElementById('viewInvoiceModal'))?.hide();
+        new bootstrap.Modal(document.getElementById('recordPaymentModal')).show();
+    }
+    
+    function processPayment() {
+        const invoiceId = currentInvoiceId;
+        const paymentAmount = parseFloat(document.getElementById('paymentAmount').value);
+        const paymentMethod = document.getElementById('paymentMethod').value;
+        const paymentReference = document.getElementById('paymentReference').value;
+        const paymentDate = document.getElementById('paymentDate').value;
+        
+        const invoice = invoices.find(i => i.id === invoiceId);
+        
+        if (!paymentAmount || !paymentMethod) {
+            alert('Please enter payment amount and method');
+            return;
+        }
+        
+        if (paymentAmount < invoice.amount) {
+            if (!confirm(`Partial payment of KES ${paymentAmount.toLocaleString()} received. Remaining balance: KES ${(invoice.amount - paymentAmount).toLocaleString()}. Continue?`)) {
+                return;
+            }
+            invoice.amount = invoice.amount - paymentAmount;
+        }
+        
+        if (paymentAmount >= invoice.amount) {
+            invoice.status = 'paid';
+            invoice.paid_date = paymentDate;
+            invoice.payment_method = paymentMethod;
+            invoice.amount = paymentAmount; // Full payment
+        }
+        
+        bootstrap.Modal.getInstance(document.getElementById('recordPaymentModal')).hide();
+        document.getElementById('paymentForm').reset();
+        
+        loadInvoices();
+        updateStats();
+        
+        alert(`Payment of KES ${paymentAmount.toLocaleString()} recorded successfully!`);
+    }
+    
+    function printInvoice() {
+        if (currentInvoiceId) {
+            printInvoiceFromList(currentInvoiceId);
+        }
+    }
+    
+    function printInvoiceFromList(id) {
+        const invoice = invoices.find(i => i.id === id);
+        alert(`Printing invoice #INV-${id} for ${invoice.project_title}\n\nIn a real application, this would generate a PDF for printing.`);
+    }
+    
+    function searchInvoices() {
+        const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+        const filtered = invoices.filter(i => 
+            i.project_title.toLowerCase().includes(searchTerm) ||
+            i.customer.toLowerCase().includes(searchTerm)
+        );
+        
+        const tbody = document.getElementById('invoicesTableBody');
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center">No invoices found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(invoice => {
+            const today = new Date();
+            const dueDate = new Date(invoice.due_date);
+            const daysDiff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+            
+            let daysDisplay = '';
+            if (invoice.status === 'paid') {
+                daysDisplay = `<span class="text-success">Paid</span>`;
+            } else if (daysDiff > 0) {
+                daysDisplay = `<span class="text-warning">${daysDiff} days left</span>`;
+            } else {
+                daysDisplay = `<span class="text-danger">${Math.abs(daysDiff)} days overdue</span>`;
+            }
+            
+            let statusBadge = invoice.status === 'paid' ? 'bg-success' : (invoice.status === 'overdue' ? 'bg-danger' : 'bg-warning');
+            
+            return `
+                <tr>
+                    <td><strong>#INV-${invoice.id}</strong></td>
+                    <td>${invoice.project_title}</td>
+                    <td>${invoice.customer}</td>
+                    <td>KES ${invoice.amount.toLocaleString()}</td>
+                    <td>${invoice.issue_date}</td>
+                    <td>${invoice.due_date}</td>
+                    <td>${daysDisplay}</td>
+                    <td><span class="badge ${statusBadge}">${invoice.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info" onclick="viewInvoice(${invoice.id})">View</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+    
+    function filterInvoices() {
+        const status = document.getElementById('statusFilter').value;
+        if (status === 'all') {
+            loadInvoices();
+        } else {
+            const filtered = invoices.filter(i => i.status === status);
+            const tbody = document.getElementById('invoicesTableBody');
+            
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="9" class="text-center">No invoices found</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = filtered.map(invoice => {
+                const today = new Date();
+                const dueDate = new Date(invoice.due_date);
+                const daysDiff = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+                
+                let daysDisplay = invoice.status === 'paid' ? 'Paid' : `${daysDiff} days left`;
+                
+                return `
+                    <tr>
+                        <td><strong>#INV-${invoice.id}</strong></td>
+                        <td>${invoice.project_title}</td>
+                        <td>${invoice.customer}</td>
+                        <td>KES ${invoice.amount.toLocaleString()}</td>
+                        <td>${invoice.issue_date}</td>
+                        <td>${invoice.due_date}</td>
+                        <td>${daysDisplay}</td>
+                        <td><span class="badge bg-${invoice.status === 'paid' ? 'success' : 'warning'}">${invoice.status}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-info" onclick="viewInvoice(${invoice.id})">View</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+    }
+    
+    function filterByDate() {
+        const filter = document.getElementById('dateFilter').value;
+        const today = new Date();
+        
+        let filtered = invoices;
+        
+        if (filter === 'this_month') {
+            filtered = invoices.filter(i => {
+                const issueDate = new Date(i.issue_date);
+                return issueDate.getMonth() === today.getMonth() && 
+                       issueDate.getFullYear() === today.getFullYear();
+            });
+        } else if (filter === 'last_month') {
+            filtered = invoices.filter(i => {
+                const issueDate = new Date(i.issue_date);
+                const lastMonth = new Date(today);
+                lastMonth.setMonth(lastMonth.getMonth() - 1);
+                return issueDate.getMonth() === lastMonth.getMonth() &&
+                       issueDate.getFullYear() === lastMonth.getFullYear();
+            });
+        } else if (filter === 'overdue_only') {
+            filtered = invoices.filter(i => i.status === 'overdue');
+        }
+        
+        const tbody = document.getElementById('invoicesTableBody');
+        
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center">No invoices found</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = filtered.map(invoice => {
+            const daysDiff = Math.ceil((new Date(invoice.due_date) - today) / (1000 * 60 * 60 * 24));
+            let daysDisplay = invoice.status === 'paid' ? 'Paid' : `${daysDiff} days left`;
+            
+            return `
+                <tr>
+                    <td><strong>#INV-${invoice.id}</strong></td>
+                    <td>${invoice.project_title}</td>
+                    <td>${invoice.customer}</td>
+                    <td>KES ${invoice.amount.toLocaleString()}</td>
+                    <td>${invoice.issue_date}</td>
+                    <td>${invoice.due_date}</td>
+                    <td>${daysDisplay}</td>
+                    <td><span class="badge bg-${invoice.status === 'paid' ? 'success' : 'warning'}">${invoice.status}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info" onclick="viewInvoice(${invoice.id})">View</button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    }
+</script>
+{% endblock %}
